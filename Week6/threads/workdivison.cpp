@@ -230,10 +230,13 @@ int main(){
     }
     printf("Single Thread Result: %d \n", result);
 
-    //
+    //First up, we need to intialize the mutex we're going to use in method 1
+    //Similar to the thread call this takes:
+    //  1. A pointer ot our mutex
+    //  2. An argument flag which we won't use
     pthread_mutex_init(&lock, NULL);
     
-
+    //A variable to control how many threads we want
     int n = 4;
 
     /*
@@ -244,18 +247,29 @@ int main(){
     
     */
 
+    //From here this should all be pretty familar...
+
+    //Set up our threads and the structs we want to give them
     pthread_t pool[n];
     input inputs[n];
+
+    //Initalize the structs
     for(int i = 0; i<n; i++){
         inputs[i].id = i;
         inputs[i].nthreads = n;
     }
+
+    //Start our threads
     for(int i = 0; i<n; i++){
         pthread_create(&pool[i], NULL, method1better, (void *) &inputs[i]);
     }
+
+    //Join our threads
     for(int i = 0; i<n; i++){
         pthread_join(pool[i], NULL);    
     }
+
+    //Aaaaaand we get a result! Remember this is writing to our global variable
     printf("Method 1 Better Result: %d \n", result);
 
     /*
@@ -264,23 +278,37 @@ int main(){
     
     */
 
-    int result2 = 0;
+    //Again most of this is exactly the same as before
     pthread_t pool2[n];
     input2 inputs2[n];
     for(int i = 0; i<n; i++){
         inputs2[i].id = i;
         inputs2[i].nthreads = n;
+
+        //In this case we're going to initalize the variable we're going to store stuff
+        //We don't strictly need to, but I'm going to anyways
         inputs2[i].localres = 0;
     }
+
+    //Run our threads
     for(int i = 0; i<n; i++){
         pthread_create(&pool2[i], NULL, method1other, (void *) &inputs2[i]);
     }
+
+    //Join them
     for(int i = 0; i<n; i++){
         pthread_join(pool2[i], NULL);    
     }
+
+    //Okay now some fun stuff...
+    //Since we had our threads gives us their values via the structs, we're now going to need
+    //to combine them to get our final resul 
+    int result2 = 0;
     for(int i = 0; i<n; i++){
         result2 = result2 + inputs2[i].localres;
     }
+
+    //Okay now print...
     printf("Method 1 Mutexless Result: %d \n", result2);
 
     /*
@@ -289,14 +317,38 @@ int main(){
     
     */
 
+    //Okay this version will be a little different
+
+    //Let's start by allocating our memory
+    pthread_t pool3[n];
     input3 inputs3[n];
+
+    //Now Method 2 relies on the parent to do the allocation of work 
+    //So we'll have to do that work now
+
+    //A simple way of doing this is by using the quotient and remainder of the number of elements in our array / number of threads
     int div = numsize / n;
     int mod = numsize % n;
+
+    //So let's store where each thread's chunk of memory will end
     int lastend = 0;
+
+    //Now iterate through the threads
     for(int i = 0; i<n; i++){
         inputs3[i].id = i;
         inputs3[i].localres = 0;
+
+        //Okay so each thread will start where the last threaded ended
+        //Since we wrote our thread to be non-inclusive of the end this is okay
         inputs3[i].start = lastend;
+
+        //Now where the thread ends is where it starts + the quotient (ie take an equal chunk from the array)
+        //The slightly tricky part here is how do we deal with the remainder?
+        //Here I'm going to spread the remainder over the threads
+        //So i<mod does is that for "mod" threads, I'll add additional element to their chunk. This will end up
+        //covering our remaining elements.
+
+        //IE we evenly distribute all of our elements
         if(i < mod){
             inputs3[i].end = inputs3[i].start + div + 1;
         }
@@ -304,17 +356,19 @@ int main(){
             inputs3[i].end = inputs3[i].start + div;
         }
         
+        //Make sure to update where the last element is...
         lastend = inputs3[i].end;
-        // printf("Thread %d start: %d end: %d\n", inputs3[i].id, inputs3[i].start, inputs3[i].end );
     }
-    int result3 = 0;
-    pthread_t pool3[n];
+
+    //And the rest we've seen before in Method 1 Mutexless...
     for(int i = 0; i<n; i++){
         pthread_create(&pool3[i], NULL, method2, (void *) &inputs3[i]);
     }
     for(int i = 0; i<n; i++){
         pthread_join(pool3[i], NULL);    
     }
+
+    int result3 = 0;
     for(int i = 0; i<n; i++){
         result3 = result3 + inputs3[i].localres;
     }
