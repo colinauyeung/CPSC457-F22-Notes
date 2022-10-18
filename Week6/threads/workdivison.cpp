@@ -321,7 +321,6 @@ int main(){
 
     printf("Method 2 Result: %d \n", result3);
     
-    // printf("Hello I'm back as the parent\n");
     pthread_mutex_destroy(&lock);
 
 }
