@@ -1,5 +1,5 @@
 CPPC = g++
-CPPFLAGS = -Wall -O2
+CPPFLAGS = -Wall -O2 -lpthread
 TARGET = barriers
 
 
