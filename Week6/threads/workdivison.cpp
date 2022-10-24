@@ -165,7 +165,7 @@ void * method1other(void * args){
         localres = localres + nums[i];
     }
 
-    //Now at the end, we'll write to the input struct for the parent to deal with
+    //Now at the en  d, we'll write to the input struct for the parent to deal with
     in->localres =  localres;
     pthread_exit(NULL);
     return NULL;

@@ -1,9 +1,9 @@
 CPPC = g++
-CPPFLAGS = -Wall -O2
+CPPFLAGS = -Wall -O2 -lpthread
 TARGET = barriers
 
 
-all: barriers barriersimple
+all: barriers barriersimple atomicandprinting
 
 
 barriers: barriers.cpp
@@ -11,3 +11,6 @@ barriers: barriers.cpp
 
 barriersimple: barriersimple.cpp
 	$(CPPC) $(CPPFLAGS) -o $@ barriersimple.cpp
+
+atomicandprinting: atomicandprinting.cpp
+	$(CPPC) $(CPPFLAGS) -o $@ atomicandprinting.cpp
